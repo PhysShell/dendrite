@@ -2,3 +2,4 @@
 *.pem
 postgres/
 postgres_data/
+jetstream/
