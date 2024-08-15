@@ -1,0 +1,4 @@
+*.log
+*.pem
+postgres/
+postgres_data/
