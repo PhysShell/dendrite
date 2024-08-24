@@ -28,58 +28,21 @@
             cp -r bin/* $out/bin
           '';
         };
-        configFile = pkgs.writeText "dendrite.yaml" ''
-          version: 2
-          global:
-            server_name: "physshell.org"
-            private_key: "$PWD/matrix_key.pem"
-            jetstream:
-              storage_path: "./jetstream"
-            database:
-              connection_string: "postgresql://dendrite:dendritepass@localhost/ddb?sslmode=disable"
-            logging:
-              - type: "std"
-                level: "info"
-          client_api:
-            registration_disabled: false
-          sync_api: {}
-          room_server: {}
-          federation_api:
-            key_perspectives:
-              - server_name: "matrix.org"
-                keys:
-                  - key_id: "ed25519:auto"
-                    public_key: "Noi6WqcDj0QmPxCNQqgezwTlBKrfqehY1u2FyWP9uYw"
-          media_api:
-            max_file_size_bytes: 10485760
-            max_thumbnail_generators: 10
-          logging:
-            - type: "file"
-              level: "info"
-              params:
-                path: "./logs"
-        '';
-        caddyfile = pkgs.writeText "Caddyfile" ''
-          physshell.org.com {
-            reverse_proxy localhost:8008
-          }
-          
-          element.physshell.org.com {
-            root * ${pkgs.element-web}
-            file_server
-          }
-        '';
+        configFile = ./dendrite-sample.yaml;
+caddyfile = pkgs.writeText "Caddyfile" ''
+'';
+
       in
       {
         devShells.default = pkgs.mkShell {
           buildInputs = [ go dendrite pkgs.postgresql pkgs.caddy pkgs.element-web ];
           shellHook = ''
             export PATH=$PATH:$(pwd)/bin
-            export PGDATA=$HOME/dendrite_postgres_data
-            export PGHOST=$HOME/dendrite_postgres
+            export PGDATA=$PWD/postgres_data
+            export PGHOST=$PWD/postgres
             export PGPORT=5432
-            export PGUSER=dendrite
-            export PGPASSWORD=dendritepass
+            export PGUSER=%some user%
+            export PGPASSWORD=%some password%
 
             if [ ! -d $PGDATA ]; then
               initdb --auth=trust --no-locale --encoding=UTF8
@@ -88,25 +51,28 @@
             fi
 
             mkdir -p $PGHOST
-            pg_ctl start -D $PGDATA -l $HOME/postgres.log -o "-c unix_socket_directories='$PGHOST'"
-            
+            pg_ctl start -D $PGDATA -l $PWD/postgres.log -o "-c unix_socket_directories='$PGHOST'"
+
             if ! psql -lqt | cut -d \| -f 1 | grep -qw dendrite; then
               createuser -s dendrite
               createdb -O dendrite dendrite
             fi
 
             # Start Dendrite
-            nohup dendrite-monolith-server -config ${configFile} > dendrite.log 2>&1 &
+ #           nohup dendrite -config ${configFile} > $PWD/dendrite.log 2>&1 &
 
             # Start Caddy
-            nohup caddy run --config ${caddyfile} > caddy.log 2>&1 &
+#            nohup caddy run --config ${caddyfile} --adapter caddyfile > $PWD/caddy.log 2>&1 &
 
-            echo "Dendrite and Caddy are now running. Check dendrite.log and caddy.log for details."
+            echo *******WARNING*******
+            echo FOR NOW in nix develop you need to manually start dendrite and caddy: 'sudo caddy run --config Caddyfile & dendrite --config dendrite-sample.yaml &'
+            echo *******WARNING*******
+            #echo "Dendrite and Caddy are now running. Check dendrite.log and caddy.log for details."
           '';
         };
         # after run for now it needs to create yser manually like so
         #createuser -s dendriteuser --pwprompt
-	      #createdb -O dendriteuser ddb
+              #createdb -O dendriteuser ddb
         packages.default = dendrite;
         apps.default = {
           type = "app";

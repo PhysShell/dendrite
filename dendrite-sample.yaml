@@ -10,8 +10,8 @@ version: 2
 # Global Matrix configuration. This configuration applies to all components.
 global:
   # The domain name of this homeserver.
-  server_name: localhost
-
+  server_name: physshell.org
+  # serve_server_wellknown: true
   # The path to the signing private key file, used to sign requests and events.
   # Note that this is NOT the same private key as used for TLS! To generate a
   # signing key, use "./bin/generate-keys --private-key matrix_key.pem".
@@ -41,7 +41,7 @@ global:
   # sections. For monolith deployments using SQLite databases,
   # you must configure the "database" block for each component instead.
   database:
-    connection_string: postgresql://dendriteuser:401565@localhost/dendrite?sslmode=disable
+    connection_string: <connection string>
     max_open_conns: 90
     max_idle_conns: 5
     conn_max_lifetime: -1
@@ -169,7 +169,7 @@ app_service_api:
 client_api:
   # Prevents new users from being able to register on this homeserver, except when
   # using the registration shared secret below.
-  registration_disabled: true
+  registration_disabled: false
 
   # Prevents new guest accounts from being created. Guest registration is also
   # disabled implicitly by setting 'registration_disabled' above.
@@ -177,18 +177,18 @@ client_api:
 
   # If set, allows registration by anyone who knows the shared secret, regardless
   # of whether registration is otherwise disabled.
-  registration_shared_secret: "4b0d2fb5180415826d5544180cbd405429799e9062b282eddf455bb0105b49de"
+  registration_shared_secret: "some shared secret"
 
   # Whether to require reCAPTCHA for registration. If you have enabled registration
   # then this is HIGHLY RECOMMENDED to reduce the risk of your homeserver being used
   # for coordinated spam attacks.
-  enable_registration_captcha: false
+  enable_registration_captcha: true
 
   # Settings for ReCAPTCHA.
-  recaptcha_public_key: ""
-  recaptcha_private_key: ""
+  recaptcha_public_key: "some public key"
+  recaptcha_private_key: "some private key"
   recaptcha_bypass_secret: ""
-  
+  recaptcha_siteverify_api: "https://www.google.com/recaptcha/api/siteverify"  
   # To use hcaptcha.com instead of ReCAPTCHA, set the following parameters, otherwise just keep them empty.
   # recaptcha_siteverify_api: "https://hcaptcha.com/siteverify"
   # recaptcha_api_js_url: "https://js.hcaptcha.com/1/api.js"

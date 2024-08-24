@@ -1,0 +1,42 @@
+{
+  admin off
+  email <example@example.com>
+}
+
+physshell.org {
+  encode gzip
+
+  header /.well-known/matrix/* Content-Type application/json
+  header /.well-known/matrix/* Access-Control-Allow-Origin *
+
+  respond /.well-known/matrix/server `{"m.server": "physshell.org:443"}`
+  respond /.well-known/matrix/client `{"m.homeserver":{"base_url":"https://physshell.org"}}`
+
+  reverse_proxy /_matrix/* localhost:8008
+  reverse_proxy /_synapse/client/* localhost:8008
+
+  reverse_proxy localhost:8008
+  tls {
+    issuer acme
+  }
+}
+
+element.physshell.org {
+  encode gzip
+  reverse_proxy localhost:8008
+#  root * /nix/store/8hgbpa67pd80py1akwmj0kppg860jvcz-element-web-1.11.55/share/element-web
+#  file_server
+  tls {
+    issuer acme
+  }
+}
+
+matrix.physshell.org {
+  encode gzip
+  reverse_proxy localhost:8008
+#  root * /nix/store/8hgbpa67pd80py1akwmj0kppg860jvcz-element-web-1.11.55/share/element-web
+#  file_server
+  tls {
+    issuer acme
+  }
+}
